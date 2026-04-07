@@ -1,0 +1,42 @@
+name: Daily News Digest
+
+on:
+  schedule:
+    # 08:00 UTC = 09:00 CET (winter) / 10:00 CEST (summer)
+    # Adjust the hour if you want a different local time:
+    #   07:00 UTC → 08:00 CET / 09:00 CEST
+    #   08:00 UTC → 09:00 CET / 10:00 CEST
+    - cron: '0 8 * * 1-5'   # weekdays only; change to '0 8 * * *' for every day
+
+  workflow_dispatch:          # lets you trigger a run manually from GitHub UI
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_APP_PW: ${{ secrets.GMAIL_APP_PW }}
+        run: python digest.py
+
+      - name: Upload digest as artifact
+        if: always()                         # save even if email fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: digest-${{ github.run_id }}
+          path: output/
+          retention-days: 30
