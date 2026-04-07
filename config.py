@@ -9,7 +9,7 @@ import os
 # Free tier: 1,500 requests/day, no credit card needed.
 # Get your key at https://aistudio.google.com/app/apikey
 # GitHub Secret name: GOOGLE_API_KEY
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "AIzaSyBjNMMfs8RjzgPf5cAUEcrpOhP_uoB2UWQ")
+GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "AIzaSyADgG2HVBVPbYXqIt2lFDwHBCCnbS3ONLA")
 
 # ── Gmail delivery ─────────────────────────────────────────────────────────────
 # You need a Gmail App Password (NOT your normal password).
