@@ -15,7 +15,7 @@ from pathlib import Path
 
 import feedparser
 import yfinance as yf
-from google import genai
+from groq import Groq
 
 import config
 
@@ -104,12 +104,12 @@ def generate_digest(headlines_text: str, market_text: str) -> str:
         {headlines_text}
     """).strip()
 
-    client   = genai.Client(api_key=config.GOOGLE_API_KEY)
-    response = client.models.generate_content(
-        model    = "gemini-2.0-flash-lite",  # free tier
-        contents = prompt,
+    client   = Groq(api_key=config.GROQ_API_KEY)
+    response = client.chat.completions.create(
+        model    = "llama-3.3-70b-versatile",  # free tier
+        messages = [{"role": "user", "content": prompt}],
     )
-    return response.text.strip()
+    return response.choices[0].message.content.strip()
 
 
 # ── 4. Deliver ─────────────────────────────────────────────────────────────────
@@ -170,7 +170,7 @@ def main():
     headlines_text = format_headlines_for_prompt(articles)
     print(f"  → {len(articles)} articles collected")
 
-    print(f"[{datetime.now():%H:%M:%S}] Generating digest with Gemini…")
+    print(f"[{datetime.now():%H:%M:%S}] Generating digest with Groq…")
     digest = generate_digest(headlines_text, market_text)
 
     print(f"[{datetime.now():%H:%M:%S}] Saving to file…")
