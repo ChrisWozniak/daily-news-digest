@@ -2,7 +2,7 @@
 
 Automated morning briefing delivered to your inbox at 9 AM — no apps, no manual steps.
 
-Pulls headlines from trusted RSS feeds, grabs live market data, and uses Claude AI to write a clean 2–3 minute summary connecting world events to market movements.
+Pulls headlines from trusted RSS feeds, grabs live market data, and uses Google Gemini AI (free) to write a clean 2–3 minute summary connecting world events to market movements.
 
 Two run modes that can operate simultaneously:
 - **Local** — Windows Task Scheduler fires at 9 AM on your machine
@@ -53,17 +53,28 @@ Up to 5 headlines per source are fetched each run (configurable in `config.py`).
 
 Previous close and % change are pulled for each ticker.
 
+### AI model — Google Gemini 1.5 Flash (free)
+
+| Detail | Value |
+|---|---|
+| Model | `gemini-1.5-flash` |
+| Free tier | 1,500 requests/day, 1 million tokens/day |
+| Credit card required | No |
+| Cost at this usage | $0.00 |
+
+Gemini reads all the headlines and market data, filters what's relevant, connects events to price movements, and writes the final digest in plain language.
+
 ---
 
 ## Python packages used
 
-| Package | Version | Purpose |
-|---|---|---|
-| `anthropic` | latest | Claude API client — sends headlines + market data, gets back the digest |
-| `feedparser` | latest | Parses RSS/Atom feeds from all news sources |
-| `yfinance` | latest | Free Yahoo Finance wrapper — fetches ticker price history |
+| Package | Purpose |
+|---|---|
+| `google-generativeai` | Google Gemini API client — sends headlines + market data, receives the written digest |
+| `feedparser` | Parses RSS/Atom feeds from all 7 news sources |
+| `yfinance` | Free Yahoo Finance wrapper — fetches ticker price history (no API key needed) |
 
-Standard library only (no extra install needed): `smtplib`, `email`, `pathlib`, `os`, `re`, `datetime`.
+Standard library (no install needed): `smtplib`, `email`, `pathlib`, `os`, `re`, `textwrap`, `datetime`.
 
 ---
 
@@ -77,7 +88,7 @@ daily news digest/
 ├── output/                    # auto-created; one .txt backup per run
 ├── config.py                  # settings: API keys, tickers, feeds, email
 ├── digest.py                  # main script (fetch → summarise → deliver)
-├── requirements.txt           # pip dependencies
+├── requirements.txt           # pip dependencies (3 packages)
 └── setup.bat                  # one-click local install + Task Scheduler
 ```
 
@@ -94,7 +105,7 @@ RSS feeds (7 sources, up to 5 articles each)
      digest.py collects and formats everything
             │
             ▼
-    Claude Haiku API
+    Google Gemini 1.5 Flash (free)
     (filters relevance, connects events to markets, writes the digest)
             │
          ┌──┴──┐
@@ -108,7 +119,7 @@ Task Sched.   (cron schedule)
 (9 AM local)  (8:00 UTC / 9 AM CET)
 ```
 
-Both run modes use the same `digest.py` and `config.py`. The only difference is where the API keys come from: a local file (local mode) vs. GitHub Secrets (cloud mode).
+Both run modes use the same `digest.py` and `config.py`. The only difference is where the API key comes from: a local file (local mode) vs. GitHub Secrets (cloud mode).
 
 ---
 
@@ -116,11 +127,11 @@ Both run modes use the same `digest.py` and `config.py`. The only difference is 
 
 ### 1. Get your API keys
 
-**Anthropic API key**
-1. Go to [console.anthropic.com](https://console.anthropic.com)
-2. Create an account and add a payment method
-3. Navigate to API Keys → Create key
-4. Copy the key (starts with `sk-ant-...`)
+**Google Gemini API key — free, no credit card**
+1. Go to [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click **Create API key**
+4. Copy the key (starts with `AIza...`)
 
 **Gmail App Password**
 1. Go to your Google Account → Security
@@ -133,8 +144,8 @@ Both run modes use the same `digest.py` and `config.py`. The only difference is 
 Open [config.py](config.py) and fill in the two required fields:
 
 ```python
-ANTHROPIC_API_KEY = "sk-ant-..."          # your Anthropic key
-GMAIL_APP_PW      = "abcd efgh ijkl mnop" # your Gmail app password
+GOOGLE_API_KEY = "AIza..."             # your Gemini key
+GMAIL_APP_PW   = "abcd efgh ijkl mnop" # your Gmail app password
 ```
 
 ### 3. Install and schedule
@@ -142,7 +153,7 @@ GMAIL_APP_PW      = "abcd efgh ijkl mnop" # your Gmail app password
 Right-click `setup.bat` → **Run as administrator**.
 
 This will:
-- Install the 3 Python packages (`anthropic`, `feedparser`, `yfinance`)
+- Install the 3 Python packages (`google-generativeai`, `feedparser`, `yfinance`)
 - Register a Windows Task Scheduler job named `DailyNewsDigest` that runs at 9:00 AM daily
 
 ### 4. Test
@@ -180,10 +191,18 @@ Add these two secrets exactly:
 
 | Secret name | Value |
 |---|---|
-| `ANTHROPIC_API_KEY` | your Anthropic API key |
-| `GMAIL_APP_PW` | your Gmail app password |
+| `GOOGLE_API_KEY` | your Gemini API key (starts with `AIza...`) |
+| `GMAIL_APP_PW` | your Gmail app password (16 characters) |
 
-> Do **not** commit your real keys to `config.py` — keep the placeholder text there. The workflow reads the keys from Secrets via environment variables automatically.
+**Step by step:**
+1. In your repo click the **Settings** tab (top right, gear icon)
+2. In the left sidebar click **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Name: `GOOGLE_API_KEY` — paste your key — click **Add secret**
+5. Click **New repository secret** again
+6. Name: `GMAIL_APP_PW` — paste your app password — click **Add secret**
+
+> Do **not** commit your real keys to `config.py` — keep the placeholder text there. The workflow reads keys from Secrets via environment variables automatically.
 
 ### 3. Verify the workflow
 
@@ -194,8 +213,8 @@ To change the time, edit the `cron` line in [.github/workflows/daily-digest.yml]
 
 ### 4. Test manually
 
-In the Actions tab → select `Daily News Digest` → **Run workflow** → Run.  
-Watch the logs. On success you'll get an email and the digest file will appear as a downloadable artifact.
+Actions tab → select **Daily News Digest** → **Run workflow** → **Run workflow** (green button).  
+Watch the logs. On success you'll get an email and the digest file will appear as a downloadable artifact (30-day retention).
 
 ---
 
@@ -206,12 +225,13 @@ You can have both active at the same time — they are fully independent.
 | | Local | GitHub Actions |
 |---|---|---|
 | Requires machine on | Yes | No |
-| Schedule | 9:00 AM (your timezone) | 08:00 UTC |
+| Schedule | 9:00 AM (your timezone) | 08:00 UTC (9 AM CET) |
 | Output file | `output/` folder locally | Downloadable artifact in Actions tab |
 | Email | Yes | Yes |
 | API key source | `config.py` | GitHub Secrets |
+| Cost | Free | Free |
 
-If both fire around the same time you'll get two emails. Offset the times slightly if you want only one: e.g. set local to 9:05 AM or disable one of the two.
+If both fire around the same time you'll get two emails. To avoid that, offset the times slightly (e.g. set local to 9:05 AM) or just disable one.
 
 ---
 
@@ -232,21 +252,19 @@ If both fire around the same time you'll get two emails. Offset the times slight
 
 **Change schedule (cloud)** — edit the `cron:` line in `.github/workflows/daily-digest.yml`. Use [crontab.guru](https://crontab.guru) to build the expression.
 
-**More articles per source** — increase `MAX_ARTICLES_PER_FEED` in `config.py` (more = slightly higher API cost).
+**More articles per source** — increase `MAX_ARTICLES_PER_FEED` in `config.py`.
 
 ---
 
-## Cost estimate
+## Cost
 
-Claude Haiku processes ~3,000–4,000 tokens per run.
-
-| | Cost |
+| Component | Cost |
 |---|---|
-| Per run | ~$0.01–0.02 |
-| Per month (weekdays only) | ~$0.20–0.40 |
-| Per month (every day) | ~$0.30–0.60 |
-
-GitHub Actions is free for public repos and includes 2,000 free minutes/month for private repos. Each run takes ~30 seconds.
+| Google Gemini 1.5 Flash | Free (1,500 req/day limit) |
+| GitHub Actions | Free |
+| yfinance (market data) | Free |
+| RSS feeds (news) | Free |
+| **Total** | **$0.00** |
 
 ---
 
@@ -255,16 +273,19 @@ GitHub Actions is free for public repos and includes 2,000 free minutes/month fo
 **Email fails with authentication error**  
 You must use an App Password, not your regular Gmail password. 2-Step Verification must be enabled on your Google account.
 
+**Gemini API error: API key not valid**  
+Double-check the key in `config.py` (local) or GitHub Secrets (cloud). It should start with `AIza`.
+
 **No market data / yfinance errors**  
 Yahoo Finance occasionally rate-limits. Wait a few minutes and rerun.
 
 **GitHub Actions: "Context access might be invalid: secrets"**  
-The secret name in the workflow must exactly match the name you created in GitHub Settings. Both are case-sensitive.
+The secret name in the workflow must exactly match the name in GitHub Settings — both are case-sensitive (`GOOGLE_API_KEY`, not `google_api_key`).
 
 **Local task doesn't fire at 9 AM**  
 The machine must be awake. Check Task Scheduler → `DailyNewsDigest` — verify it's enabled and the user account matches your login.
 
-**Run manually any time**  
+**Run manually any time**
 ```bash
 python digest.py
 ```

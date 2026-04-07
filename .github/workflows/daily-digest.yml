@@ -29,7 +29,7 @@ jobs:
 
       - name: Run digest
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           GMAIL_APP_PW: ${{ secrets.GMAIL_APP_PW }}
         run: python digest.py
 

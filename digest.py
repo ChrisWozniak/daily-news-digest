@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Daily News Digest
-Fetches news + market data, summarizes with Claude, delivers by email + file.
+Fetches news + market data, summarizes with Gemini, delivers by email + file.
 """
 
 import os
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import feedparser
 import yfinance as yf
-import anthropic
+import google.generativeai as genai
 
 import config
 
@@ -73,7 +73,7 @@ def format_headlines_for_prompt(articles: list[dict]) -> str:
     return "\n".join(lines)
 
 
-# ── 3. Claude summarisation ────────────────────────────────────────────────────
+# ── 3. Gemini summarisation ────────────────────────────────────────────────────
 
 def generate_digest(headlines_text: str, market_text: str) -> str:
     today = date.today().strftime("%A, %B %d, %Y")
@@ -104,13 +104,10 @@ def generate_digest(headlines_text: str, market_text: str) -> str:
         {headlines_text}
     """).strip()
 
-    client  = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
-    message = client.messages.create(
-        model      = "claude-haiku-4-5-20251001",   # cheapest model, plenty capable here
-        max_tokens = 1024,
-        messages   = [{"role": "user", "content": prompt}],
-    )
-    return message.content[0].text.strip()
+    genai.configure(api_key=config.GOOGLE_API_KEY)
+    model    = genai.GenerativeModel("gemini-1.5-flash")  # free tier
+    response = model.generate_content(prompt)
+    return response.text.strip()
 
 
 # ── 4. Deliver ─────────────────────────────────────────────────────────────────
@@ -171,7 +168,7 @@ def main():
     headlines_text = format_headlines_for_prompt(articles)
     print(f"  → {len(articles)} articles collected")
 
-    print(f"[{datetime.now():%H:%M:%S}] Generating digest with Claude…")
+    print(f"[{datetime.now():%H:%M:%S}] Generating digest with Gemini…")
     digest = generate_digest(headlines_text, market_text)
 
     print(f"[{datetime.now():%H:%M:%S}] Saving to file…")
