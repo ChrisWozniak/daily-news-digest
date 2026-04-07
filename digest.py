@@ -15,7 +15,7 @@ from pathlib import Path
 
 import feedparser
 import yfinance as yf
-import google.generativeai as genai
+from google import genai
 
 import config
 
@@ -104,9 +104,11 @@ def generate_digest(headlines_text: str, market_text: str) -> str:
         {headlines_text}
     """).strip()
 
-    genai.configure(api_key=config.GOOGLE_API_KEY)
-    model    = genai.GenerativeModel("gemini-1.5-flash")  # free tier
-    response = model.generate_content(prompt)
+    client   = genai.Client(api_key=config.GOOGLE_API_KEY)
+    response = client.models.generate_content(
+        model    = "gemini-2.0-flash",  # free tier
+        contents = prompt,
+    )
     return response.text.strip()
 
 
