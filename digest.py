@@ -106,7 +106,7 @@ def generate_digest(headlines_text: str, market_text: str) -> str:
 
     client   = genai.Client(api_key=config.GOOGLE_API_KEY)
     response = client.models.generate_content(
-        model    = "gemini-2.0-flash",  # free tier
+        model    = "gemini-2.0-flash-lite",  # free tier
         contents = prompt,
     )
     return response.text.strip()
