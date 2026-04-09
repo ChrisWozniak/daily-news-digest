@@ -17,7 +17,7 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "gsk_uk6sOeCFzNRdNClmguO7WGdyb3FY3
 #        App passwords → create one called "news digest"
 # GitHub Secret name: GMAIL_APP_PW
 GMAIL_SENDER    = "k8wozniak@gmail.com"
-GMAIL_APP_PW    = os.environ.get("GMAIL_APP_PW", "YOUR_GMAIL_APP_PASSWORD")  # REQUIRED
+GMAIL_APP_PW    = os.environ.get("GMAIL_APP_PW", "smgribzjpybprdjc")
 EMAIL_RECIPIENT = "k8wozniak@gmail.com"
 
 # ── Market tickers (Yahoo Finance symbols) ─────────────────────────────────────

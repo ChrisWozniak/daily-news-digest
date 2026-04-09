@@ -1,3 +1,5 @@
 groq
 feedparser
 yfinance
+flask
+apscheduler
