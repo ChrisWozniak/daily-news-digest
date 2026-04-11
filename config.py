@@ -9,7 +9,7 @@ import os
 # Free tier: 14,400 requests/day, no credit card needed.
 # Get your key at https://console.groq.com → API Keys → Create API Key
 # GitHub Secret name: GROQ_API_KEY
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "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")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "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")
 
 # ── Gmail delivery ─────────────────────────────────────────────────────────────
 # You need a Gmail App Password (NOT your normal password).
