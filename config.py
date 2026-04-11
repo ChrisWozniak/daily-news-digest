@@ -1,15 +1,19 @@
 # ── Daily News Digest ── Configuration ────────────────────────────────────────
-# For LOCAL use: fill in the values marked REQUIRED below.
-# For GITHUB ACTIONS: values are read from environment variables (GitHub Secrets).
-#   The fallback strings here are only used when the env var is not set.
+# For LOCAL use: create a .env file next to this file with:
+#   GROQ_API_KEY=your_key_here
+#   GMAIL_APP_PW=your_app_password_here
+# For GITHUB ACTIONS: set these as GitHub Secrets (GROQ_API_KEY, GMAIL_APP_PW).
 
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent / ".env")
 
 # ── Groq API ───────────────────────────────────────────────────────────────────
-# Free tier: 14,400 requests/day, no credit card needed.
-# Get your key at https://console.groq.com → API Keys → Create API Key
+# Free tier: 14,400 requests/day — https://console.groq.com → API Keys
 # GitHub Secret name: GROQ_API_KEY
-GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "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")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
 # ── Gmail delivery ─────────────────────────────────────────────────────────────
 # You need a Gmail App Password (NOT your normal password).
@@ -17,7 +21,7 @@ GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "gsk_DHh2rULorSkinowxpbOtWGdyb3FY6
 #        App passwords → create one called "news digest"
 # GitHub Secret name: GMAIL_APP_PW
 GMAIL_SENDER    = "k8wozniak@gmail.com"
-GMAIL_APP_PW    = os.environ.get("GMAIL_APP_PW", "smgribzjpybprdjc")
+GMAIL_APP_PW    = os.environ.get("GMAIL_APP_PW", "")
 EMAIL_RECIPIENT = "k8wozniak@gmail.com"
 
 # ── Market tickers (Yahoo Finance symbols) ─────────────────────────────────────
